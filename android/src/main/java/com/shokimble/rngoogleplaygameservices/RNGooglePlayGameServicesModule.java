@@ -256,12 +256,19 @@ public class RNGooglePlayGameServicesModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void unlockAchievement(String id, final Promise promise) {
-    if(mAchievementsClient == null) {
-      promise.reject("Please sign in first");
-      return;
-    }
-    mAchievementsClient.unlock(id);
+    Games.getAchievementsClient(this, GoogleSignIn.getLastSignedInAccount(this))
+    .unlock(id);
     promise.resolve("Unlocked achievement");
+
+
+    // getCurrentActivity().startActivityForResult( signInClient.getSignInIntent(), RC_SIGN_IN);
+
+    // if(mAchievementsClient == null) {
+    //   promise.reject("Please sign in first");
+    //   return;
+    // }
+    // mAchievementsClient.unlock(id);
+    // promise.resolve("Unlocked achievement");
   }
 
   /////////////////////////////////////////////////////////////////////////////
