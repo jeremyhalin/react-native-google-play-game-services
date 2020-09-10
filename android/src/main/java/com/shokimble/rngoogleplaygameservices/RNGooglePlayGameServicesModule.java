@@ -256,7 +256,7 @@ public class RNGooglePlayGameServicesModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void unlockAchievement(String id, final Promise promise) {
-    Games.getAchievementsClient(getCurrentActivity(), GoogleSignIn.getLastSignedInAccount(this)).unlock(id);
+    Games.getAchievementsClient(getCurrentActivity(), this.googleSignInAccount).unlock(id);
     promise.resolve("Unlocked achievement");
 
 
