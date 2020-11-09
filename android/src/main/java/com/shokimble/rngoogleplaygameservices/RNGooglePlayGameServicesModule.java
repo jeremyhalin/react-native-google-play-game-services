@@ -161,7 +161,7 @@ public class RNGooglePlayGameServicesModule extends ReactContextBaseJavaModule {
     
           // Create the new snapshot
           // ...
-          snapshotPromise.reject('creating a new snapshot?');
+          snapshotPromise.reject("creating a new snapshot?");
         }
       }
   
