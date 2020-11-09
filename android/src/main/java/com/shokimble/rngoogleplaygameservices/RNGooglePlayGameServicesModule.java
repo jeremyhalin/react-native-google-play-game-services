@@ -91,6 +91,7 @@ public class RNGooglePlayGameServicesModule extends ReactContextBaseJavaModule {
 
   // tag for debug logging
   private static final String TAG = "shorngames";
+  private String mCurrentSaveName = "snapshotTemp";
 
   /////////////////////////////////////////////////////////////////////////////
 
