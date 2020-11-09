@@ -55,6 +55,9 @@ import com.google.android.gms.games.SnapshotsClient;
 import com.google.android.gms.games.SnapshotsClient.DataOrConflict;
 import com.google.android.gms.games.SnapshotsClient.SnapshotConflict;
 
+import java.util.Random;
+import java.math.BigInteger; 
+
 /*
 TODO implement:
 
@@ -90,7 +93,7 @@ public class RNGooglePlayGameServicesModule extends ReactContextBaseJavaModule {
   private static final int RC_SAVED_GAMES = 9009;
 
   // tag for debug logging
-  private static final String TAG = "shorngames";
+  private static final String TAG = "RNGPGS";
   private String mCurrentSaveName = "snapshotTemp";
 
   /////////////////////////////////////////////////////////////////////////////
@@ -146,24 +149,25 @@ public class RNGooglePlayGameServicesModule extends ReactContextBaseJavaModule {
       }
 
       if (requestCode == RC_SAVED_GAMES) {
-        if (intent.hasExtra(SnapshotsClient.EXTRA_SNAPSHOT_METADATA)) {
-          // Load a snapshot.
-          SnapshotMetadata snapshotMetadata =
-              intent.getParcelableExtra(SnapshotsClient.EXTRA_SNAPSHOT_METADATA);
-          mCurrentSaveName = snapshotMetadata.getUniqueName();
-    
-          // Load the game data from the Snapshot
-          // ...
-          this.loadSnapshot(mCurrentSaveName);
-        } else if (intent.hasExtra(SnapshotsClient.EXTRA_SNAPSHOT_NEW)) {
-          // Create a new snapshot named with a unique string
-          String unique = new BigInteger(281, new Random()).toString(13);
-          mCurrentSaveName = "snapshotTemp-" + unique;
-    
-          // Create the new snapshot
-          // ...
-          snapshotPromise.reject("creating a new snapshot?");
+        Log.d(TAG, "onActivityResult() : RC_SAVED_GAMES");
+        if (resultCode == Activity.RESULT_OK) {
+          if (intent.hasExtra(SnapshotsClient.EXTRA_SNAPSHOT_METADATA)) {
+            Log.d(TAG, "onActivityResult() : EXTRA_SNAPSHOT_METADATA");
+            // Load a snapshot.
+            SnapshotMetadata snapshotMetadata =
+                intent.getParcelableExtra(SnapshotsClient.EXTRA_SNAPSHOT_METADATA);
+            mCurrentSaveName = snapshotMetadata.getUniqueName();
+
+            snapshotPromise.resolve(mCurrentSaveName);
+      
+            // Load the game data from the Snapshot
+            // ...
+            loadSnapshot(mCurrentSaveName, snapshotPromise);
+          }
+        } else {
+          snapshotPromise.reject("canceled by user");
         }
+        snapshotPromise = null;
       }
   
     }
@@ -583,7 +587,7 @@ public class RNGooglePlayGameServicesModule extends ReactContextBaseJavaModule {
 
   /////////////////////////////////////////////////////////////////////////////
   @ReactMethod
-  public void showSavedGamesUI(String uiTitle, final Promise promise) {
+  public void showSavedGamesUI(String uiTitle, boolean allowAddButton, boolean allowDelete, final Promise promise) {
     if(mSnapshotsClient == null) {
       snapshotPromise.reject("Please sign in first");
       return;
@@ -592,13 +596,20 @@ public class RNGooglePlayGameServicesModule extends ReactContextBaseJavaModule {
     snapshotPromise = promise;
     
     int maxNumberOfSavedGamesToShow = 5;
-
-    Task<Intent> intentTask = mSnapshotsClient.getSelectSnapshotIntent(uiTitle, true, true, maxNumberOfSavedGamesToShow);
+    
+    Log.d(TAG, "showSavedGamesUI()");
+    Task<Intent> intentTask = mSnapshotsClient.getSelectSnapshotIntent(uiTitle, allowAddButton, allowDelete, maxNumberOfSavedGamesToShow);
 
     intentTask.addOnSuccessListener(new OnSuccessListener<Intent>() {
       @Override
       public void onSuccess(Intent intent) {
         getCurrentActivity().startActivityForResult(intent, RC_SAVED_GAMES);
+      }
+    });
+    intentTask.addOnFailureListener(new OnFailureListener() {
+      @Override
+      public void onFailure(@NonNull Exception e) {
+       promise.reject("Could not launch getSelectSnapshotIntent");
       }
     });
   }
