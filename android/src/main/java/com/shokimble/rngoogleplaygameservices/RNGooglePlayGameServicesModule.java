@@ -560,17 +560,20 @@ public class RNGooglePlayGameServicesModule extends ReactContextBaseJavaModule {
   /////////////////////////////////////////////////////////////////////////////
   @ReactMethod
   public void showSavedGamesUI() {
-    SnapshotsClient snapshotsClient =
-        Games.getSnapshotsClient(this, GoogleSignIn.getLastSignedInAccount(this));
+    if(mSnapshotsClient == null) {
+      promise.reject("Please sign in first");
+      return;
+    }
+    
     int maxNumberOfSavedGamesToShow = 5;
 
-    Task<Intent> intentTask = snapshotsClient.getSelectSnapshotIntent(
+    Task<Intent> intentTask = mSnapshotsClient.getSelectSnapshotIntent(
         "See My Saves", true, true, maxNumberOfSavedGamesToShow);
 
     intentTask.addOnSuccessListener(new OnSuccessListener<Intent>() {
       @Override
       public void onSuccess(Intent intent) {
-        startActivityForResult(intent, RC_SAVED_GAMES);
+        getCurrentActivity().startActivityForResult(intent, RC_SAVED_GAMES);
       }
     });
   }
