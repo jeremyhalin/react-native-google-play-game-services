@@ -559,7 +559,7 @@ public class RNGooglePlayGameServicesModule extends ReactContextBaseJavaModule {
 
   /////////////////////////////////////////////////////////////////////////////
   @ReactMethod
-  public void showSavedGamesUI() {
+  public void showSavedGamesUI(final Promise promise) {
     if(mSnapshotsClient == null) {
       promise.reject("Please sign in first");
       return;
