@@ -154,7 +154,7 @@ public class RNGooglePlayGameServicesModule extends ReactContextBaseJavaModule {
     
           // Load the game data from the Snapshot
           // ...
-          loadSnapshot(mCurrentSaveName);
+          this.loadSnapshot(mCurrentSaveName);
         } else if (intent.hasExtra(SnapshotsClient.EXTRA_SNAPSHOT_NEW)) {
           // Create a new snapshot named with a unique string
           String unique = new BigInteger(281, new Random()).toString(13);
