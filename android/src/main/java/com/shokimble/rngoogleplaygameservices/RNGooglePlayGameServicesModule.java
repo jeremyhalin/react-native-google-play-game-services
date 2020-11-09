@@ -86,6 +86,7 @@ public class RNGooglePlayGameServicesModule extends ReactContextBaseJavaModule {
   private static final int RC_ACHIEVEMENT_UI = 9003;
   private static final int RC_LEADERBOARD_UI = 9004;
   private static final int RC_REQUEST_PERMISSION_SUCCESS_CONTINUE_FILE_CREATION = 9005;
+  private static final int RC_SAVED_GAMES = 9009;
 
   // tag for debug logging
   private static final String TAG = "shorngames";
@@ -557,5 +558,21 @@ public class RNGooglePlayGameServicesModule extends ReactContextBaseJavaModule {
   }
 
   /////////////////////////////////////////////////////////////////////////////
+  @ReactMethod
+  public void showSavedGamesUI() {
+    SnapshotsClient snapshotsClient =
+        Games.getSnapshotsClient(this, GoogleSignIn.getLastSignedInAccount(this));
+    int maxNumberOfSavedGamesToShow = 5;
+
+    Task<Intent> intentTask = snapshotsClient.getSelectSnapshotIntent(
+        "See My Saves", true, true, maxNumberOfSavedGamesToShow);
+
+    intentTask.addOnSuccessListener(new OnSuccessListener<Intent>() {
+      @Override
+      public void onSuccess(Intent intent) {
+        startActivityForResult(intent, RC_SAVED_GAMES);
+      }
+    });
+  }
 
 }
