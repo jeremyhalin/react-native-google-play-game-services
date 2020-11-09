@@ -80,6 +80,7 @@ public class RNGooglePlayGameServicesModule extends ReactContextBaseJavaModule {
   private Promise requestPermissionPromise;
   private String requestPermissionFile;
   private Snapshot workingSnapshot;
+  private Promise snapshotPromise;
 
   //activity result code
   private static final int RC_SIGN_IN = 9001;
@@ -142,6 +143,28 @@ public class RNGooglePlayGameServicesModule extends ReactContextBaseJavaModule {
         signInPromise = null;
         return;
       }
+
+      if (requestCode == RC_SAVED_GAMES) {
+        if (intent.hasExtra(SnapshotsClient.EXTRA_SNAPSHOT_METADATA)) {
+          // Load a snapshot.
+          SnapshotMetadata snapshotMetadata =
+              intent.getParcelableExtra(SnapshotsClient.EXTRA_SNAPSHOT_METADATA);
+          mCurrentSaveName = snapshotMetadata.getUniqueName();
+    
+          // Load the game data from the Snapshot
+          // ...
+          loadSnapshot(mCurrentSaveName);
+        } else if (intent.hasExtra(SnapshotsClient.EXTRA_SNAPSHOT_NEW)) {
+          // Create a new snapshot named with a unique string
+          String unique = new BigInteger(281, new Random()).toString(13);
+          mCurrentSaveName = "snapshotTemp-" + unique;
+    
+          // Create the new snapshot
+          // ...
+          snapshotPromise.reject('creating a new snapshot?');
+        }
+      }
+  
     }
 
   };
@@ -559,16 +582,17 @@ public class RNGooglePlayGameServicesModule extends ReactContextBaseJavaModule {
 
   /////////////////////////////////////////////////////////////////////////////
   @ReactMethod
-  public void showSavedGamesUI(final Promise promise) {
+  public void showSavedGamesUI(String uiTitle, final Promise promise) {
     if(mSnapshotsClient == null) {
-      promise.reject("Please sign in first");
+      snapshotPromise.reject("Please sign in first");
       return;
     }
+
+    snapshotPromise = promise;
     
     int maxNumberOfSavedGamesToShow = 5;
 
-    Task<Intent> intentTask = mSnapshotsClient.getSelectSnapshotIntent(
-        "See My Saves", true, true, maxNumberOfSavedGamesToShow);
+    Task<Intent> intentTask = mSnapshotsClient.getSelectSnapshotIntent(uiTitle, true, true, maxNumberOfSavedGamesToShow);
 
     intentTask.addOnSuccessListener(new OnSuccessListener<Intent>() {
       @Override
